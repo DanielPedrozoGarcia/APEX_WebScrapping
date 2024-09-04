@@ -24,8 +24,9 @@ def atualizar_log(message, log_area):
 # Função para iniciar o navegador com configuração de log silenciosa
 def iniciar_navegador_silencioso():
     options = webdriver.ChromeOptions()
-    options.add_argument("--log-level=3")  # Suprime logs de nível INFO e abaixo do ChromeDriver
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])  # Suprime mensagens DevTools
+    options.add_argument("--headless")  # Ativa o modo headless
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     return webdriver.Chrome(options=options)
 
 # Função para registrar o resultado da busca

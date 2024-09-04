@@ -8,6 +8,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 # Configuração do logging
 log_output = st.empty()  # Cria um placeholder para o log no Streamlit
@@ -24,18 +26,16 @@ def atualizar_log(message, log_area):
 # Função para iniciar o navegador com configuração de log silenciosa
 def iniciar_navegador_silencioso():
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Ativa o modo headless (sem interface gráfica)
-    options.add_argument("--no-sandbox")  # Necessário em ambientes em nuvem
-    options.add_argument("--disable-dev-shm-usage")  # Necessário para limitar o uso de recursos compartilhados
+    options.add_argument("--headless")  # Rodar em modo headless
+    options.add_argument("--no-sandbox")  # Necessário em ambientes na nuvem
+    options.add_argument("--disable-dev-shm-usage")  # Evitar problemas de memória
+    options.add_argument("--disable-gpu")  # Desativar GPU
+    options.add_argument("--disable-extensions")  # Desativar extensões do Chrome
+    options.add_argument("--remote-debugging-port=9222")  # Evitar erros de conexão
 
-    # Verifica se o ChromeDriver está instalado corretamente
-    try:
-        driver = webdriver.Chrome(options=options)
-        return driver
-    except Exception as e:
-        print(f"Erro ao iniciar o navegador: {e}")
-        return None
-
+    # Instalar e usar automaticamente o ChromeDriver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    return driver
 # Função para registrar o resultado da busca
 resultado_final = []
 total_registros = 0
@@ -360,7 +360,6 @@ def search_harvard_business_review(termo_busca_eng, log_area):
     return dados
 
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
-    atualizar_log("Iniciando coleta de dados de todas as fontes", log_area)
     dados = []
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
     dados.extend(search_ipea(termo_busca_pt, log_area))

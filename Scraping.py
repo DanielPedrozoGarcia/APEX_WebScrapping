@@ -9,34 +9,55 @@ import pandas as pd
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from datetime import datetime
 from io import BytesIO
-
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 
-# Configuração do logging
-log_output = st.empty()  # Cria um placeholder para o log no Streamlit
+# Cria um placeholder para o log no Streamlit
+log_output = st.empty()
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 log = logging.getLogger(__name__)
 
-logs = []  # Lista para armazenar os logs
+# Lista para armazenar os logs
+logs = []
 
 # Função para exibir logs no Streamlit, agora acumulando os logs na lista e exibindo abaixo
 def atualizar_log(message, log_area):
     logs.append(message)  # Adiciona cada log à lista
-    log_area.text_area("Log de Execução", value="\n".join(logs), height=550)  # Atualiza a única área de texto
+    log_area.text_area("Log de Execução", value="\n".join(logs), height=550)  # Atualiza a área de texto
 
 # Função para iniciar o navegador com configuração de log silenciosa
 def iniciar_navegador_silencioso():
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument('--disable-gpu')
-
-
-    # Instalar e usar automaticamente o ChromeDriver
+    options.add_argument("--headless")  # Executa o navegador no modo headless
+    options.add_argument("--no-sandbox")  # Necessário para ambientes Linux com permissões restritas
+    options.add_argument("--disable-dev-shm-usage")  # Reduz problemas de memória
+    options.add_argument('--disable-gpu')  # Desabilita o uso de GPU, opcional no modo headless
+    
+    # Instala e usa automaticamente o ChromeDriver
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
+
+# Exemplo de execução
+log_area = st.empty()  # Cria uma área para o log
+
+# Atualiza o log durante o processo
+print("Iniciando o navegador no modo headless...", log_area)
+
+try:
+    driver = iniciar_navegador_silencioso()
+    print("Navegador iniciado com sucesso!", log_area)
+
+    # Exemplo de navegação
+    driver.get('https://www.google.com')
+    print(f"Página acessada: {driver.title}", log_area)
+
+except Exception as e:
+    print(f"Erro ao iniciar o navegador: {str(e)}", log_area)
+
+finally:
+    driver.quit()
+    print("Navegador fechado.", log_area)
+
 # Função para registrar o resultado da busca
 resultado_final = []
 total_registros = 0

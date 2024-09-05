@@ -8,6 +8,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from datetime import datetime
+from io import BytesIO
+
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 
@@ -30,7 +32,6 @@ def iniciar_navegador_silencioso():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920x1080')
 
 
     # Instalar e usar automaticamente o ChromeDriver
@@ -362,25 +363,33 @@ def search_harvard_business_review(termo_busca_eng, log_area):
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados = []
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
-    dados.extend(search_ipea(termo_busca_pt, log_area))
-    dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
-    dados.extend(search_scholar_google(termo_busca_pt, log_area))
-    dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
-    dados.extend(search_statista(termo_busca_eng, log_area))
-    dados.extend(search_gartner(termo_busca_eng, log_area))
-    dados.extend(search_nielsen(termo_busca_pt, log_area))
-    dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    #dados.extend(search_ipea(termo_busca_pt, log_area))
+    #dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
+    #dados.extend(search_scholar_google(termo_busca_pt, log_area))
+    #dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
+    #dados.extend(search_statista(termo_busca_eng, log_area))
+    #dados.extend(search_gartner(termo_busca_eng, log_area))
+    #dados.extend(search_nielsen(termo_busca_pt, log_area))
+    #dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
 
     atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em Excel", log_area)
+
+    # Gerando o DataFrame
+    df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
 
     # Adicionando data e hora ao nome do arquivo
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f'search_results_{timestamp}.xlsx'
-    df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
-    df.to_excel(filename, index=False)
+
+    # Salvando o Excel em memória em vez de salvar no disco
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+    processed_data = output.getvalue()
+
     atualizar_log(f"Arquivo Excel '{filename}' gerado com sucesso", log_area)
     
-    return filename, resultado_final
+    return processed_data, filename
 
 # Streamlit App
 st.title("Web Scrapper - APEX")
@@ -393,13 +402,16 @@ termo_busca_eng = st.text_input("Digite o termo de busca em inglês:")
 if st.button("Iniciar busca"):
     if termo_busca_pt and termo_busca_eng:
         st.write("Buscando dados...")
-        log_area = st.empty()  # Cria um placeholder para o log
+        log_area = st.empty()  # Placeholder para o log
         atualizar_log("Iniciando coleta de dados de todas as fontes", log_area)  # Primeira mensagem
-        filename, resultados = combine_scripts(termo_busca_pt, termo_busca_eng, log_area)  # Passe log_area
-        st.write(f"Arquivo Excel gerado: {filename}")
-        st.write("Resumo das buscas:")
-        for resultado in resultados:
-            st.write(resultado)
-        st.write(f"Total geral de registros encontrados: {total_registros}")
+        excel_data, filename = combine_scripts(termo_busca_pt, termo_busca_eng, log_area)  # Passe log_area
+        
+        # Adicionar botão para download do Excel
+        st.download_button(
+            label="Baixar resultados em Excel",
+            data=excel_data,
+            file_name=filename,
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
     else:
         st.warning("Por favor, preencha ambos os termos de busca.")

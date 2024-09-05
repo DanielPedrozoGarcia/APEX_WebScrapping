@@ -363,14 +363,14 @@ def search_harvard_business_review(termo_busca_eng, log_area):
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados = []
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
-    #dados.extend(search_ipea(termo_busca_pt, log_area))
-    #dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
-    #dados.extend(search_scholar_google(termo_busca_pt, log_area))
-    #dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
-    #dados.extend(search_statista(termo_busca_eng, log_area))
-    #dados.extend(search_gartner(termo_busca_eng, log_area))
-    #dados.extend(search_nielsen(termo_busca_pt, log_area))
-    #dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    dados.extend(search_ipea(termo_busca_pt, log_area))
+    dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
+    dados.extend(search_scholar_google(termo_busca_pt, log_area))
+    dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
+    dados.extend(search_statista(termo_busca_eng, log_area))
+    dados.extend(search_gartner(termo_busca_eng, log_area))
+    dados.extend(search_nielsen(termo_busca_pt, log_area))
+    dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
 
     atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em Excel", log_area)
 

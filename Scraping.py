@@ -31,7 +31,11 @@ def iniciar_navegador_silencioso():
     options.add_argument("--headless")  # Executa o navegador no modo headless
     options.add_argument("--no-sandbox")  # Necessário para ambientes Linux com permissões restritas
     options.add_argument("--disable-dev-shm-usage")  # Reduz problemas de memória
-    options.add_argument('--disable-gpu')  # Desabilita o uso de GPU, opcional no modo headless
+    options.add_argument('--disable-gpu')  # Desabilita o uso de GPU
+    options.add_argument('--disable-extensions')  # Desabilita extensões
+    options.add_argument('--disable-infobars')  # Desabilita a barra de informações
+    options.add_argument('--disable-popup-blocking')  # Desabilita o bloqueio de pop-ups
+    options.add_argument('--blink-settings=imagesEnabled=false')  # Desabilita imagens para reduzir consumo de banda
     
     # Instala e usa automaticamente o ChromeDriver
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -393,22 +397,21 @@ def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados.extend(search_nielsen(termo_busca_pt, log_area))
     dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
 
-    atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em Excel", log_area)
+    atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em CSV", log_area)
 
     # Gerando o DataFrame
     df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
 
     # Adicionando data e hora ao nome do arquivo
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'search_results_{timestamp}.xlsx'
+    filename = f'search_results_{timestamp}.csv'
 
-    # Salvando o Excel em memória em vez de salvar no disco
+    # Salvando o CSV em memória em vez de salvar no disco
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False)
+    df.to_csv(output, index=False)
     processed_data = output.getvalue()
 
-    atualizar_log(f"Arquivo Excel '{filename}' gerado com sucesso", log_area)
+    atualizar_log(f"Arquivo CSV '{filename}' gerado com sucesso", log_area)
     
     return processed_data, filename
 
@@ -427,12 +430,12 @@ if st.button("Iniciar busca"):
         atualizar_log("Iniciando coleta de dados de todas as fontes", log_area)  # Primeira mensagem
         excel_data, filename = combine_scripts(termo_busca_pt, termo_busca_eng, log_area)  # Passe log_area
         
-        # Adicionar botão para download do Excel
+        # Adicionar botão para download do CSV
         st.download_button(
-            label="Baixar resultados em Excel",
-            data=excel_data,
+            label="Baixar resultados em CSV",
+            data=excel_data,  # Aqui vai o CSV gerado
             file_name=filename,
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            mime='text/csv'  # Mime type para CSV
         )
     else:
         st.warning("Por favor, preencha ambos os termos de busca.")

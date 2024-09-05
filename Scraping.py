@@ -26,12 +26,12 @@ def atualizar_log(message, log_area):
 # Função para iniciar o navegador com configuração de log silenciosa
 def iniciar_navegador_silencioso():
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Rodar em modo headless
-    options.add_argument("--no-sandbox")  # Necessário em ambientes na nuvem
-    options.add_argument("--disable-dev-shm-usage")  # Evitar problemas de memória
-    options.add_argument("--disable-gpu")  # Desativar GPU
-    options.add_argument("--disable-extensions")  # Desativar extensões do Chrome
-    options.add_argument("--remote-debugging-port=9222")  # Evitar erros de conexão
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920x1080')
+
 
     # Instalar e usar automaticamente o ChromeDriver
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)

@@ -387,37 +387,42 @@ def search_harvard_business_review(termo_busca_eng, log_area):
 
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados = []
+    
+    # Buscas com o termo em português
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
     dados.extend(search_ipea(termo_busca_pt, log_area))
     dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
     dados.extend(search_scholar_google(termo_busca_pt, log_area))
     dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
-    dados.extend(search_statista(termo_busca_eng, log_area))
-    dados.extend(search_gartner(termo_busca_eng, log_area))
-    dados.extend(search_nielsen(termo_busca_pt, log_area))
-    dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    
+    # Verifica se o termo em inglês foi preenchido
+    if termo_busca_eng:
+        atualizar_log("Iniciando buscas com o termo em inglês", log_area)
+        dados.extend(search_statista(termo_busca_eng, log_area))
+        dados.extend(search_gartner(termo_busca_eng, log_area))
+        dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    
+    atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em XLS", log_area)
 
-    atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em CSV", log_area)
-
-   # Gerando o DataFrame
+    # Gerando o DataFrame
     df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
 
     # Adicionando data e hora ao nome do arquivo
     timestamp = (datetime.now() - timedelta(hours=3)).strftime("%d-%m-%Y_%H-%M")
-    filename = f'Resultados_{timestamp}.xlsx'
+    filename = f'Resultados_{timestamp}.xls'
 
-    # Salvando o Excel em memória em vez de salvar no disco
+    # Salvando o arquivo XLS em memória em vez de salvar no disco
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False)
-    processed_data = output.getvalue()  # Obtém o conteúdo do Excel gerado
+    processed_data = output.getvalue()  # Obtém o conteúdo do XLS gerado
 
-    atualizar_log(f"Arquivo Excel '{filename}' gerado com sucesso", log_area)
+    atualizar_log(f"Arquivo XLS '{filename}' gerado com sucesso", log_area)
     
     return processed_data, filename
 
 # Streamlit App
-st.title("Web Scrapper - APEX")
+st.title("Web Scraper - APEX")
 
 # Inputs do usuário
 termo_busca_pt = st.text_input("Digite o termo de busca em português:")
@@ -425,18 +430,19 @@ termo_busca_eng = st.text_input("Digite o termo de busca em inglês:")
 
 # Botão para iniciar a busca
 if st.button("Iniciar busca"):
-    if termo_busca_pt and termo_busca_eng:
+    if termo_busca_pt:  # Agora só verifica se o termo em português está preenchido
         st.write("Buscando dados...")
         log_area = st.empty()  # Placeholder para o log
         atualizar_log("Iniciando coleta de dados de todas as fontes", log_area)  # Primeira mensagem
         excel_data, filename = combine_scripts(termo_busca_pt, termo_busca_eng, log_area)  # Passe log_area
         
-        # Adicionar botão para download do Excel
+        # Botão para download do arquivo XLS
         st.download_button(
-            label="Baixar resultados em Excel",
+            label="Baixar resultados em XLS",
             data=excel_data,
             file_name=filename,
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            mime='application/vnd.ms-excel'  # MIME type para arquivos XLS
         )
+
     else:
-        st.warning("Por favor, preencha ambos os termos de busca.")
+        st.warning("Por favor, preencha o termo de busca em português.")

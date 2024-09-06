@@ -3,4 +3,4 @@ selenium
 pandas
 webdriver-manager
 openpyxl
-xlsxwriter
+openpyxl

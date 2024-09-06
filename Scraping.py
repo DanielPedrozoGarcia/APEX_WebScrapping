@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
@@ -388,14 +388,14 @@ def search_harvard_business_review(termo_busca_eng, log_area):
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados = []
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
-    #dados.extend(search_ipea(termo_busca_pt, log_area))
-    #dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
-    #dados.extend(search_scholar_google(termo_busca_pt, log_area))
-    #dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
-    #dados.extend(search_statista(termo_busca_eng, log_area))
-    #dados.extend(search_gartner(termo_busca_eng, log_area))
-    #dados.extend(search_nielsen(termo_busca_pt, log_area))
-    #dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    dados.extend(search_ipea(termo_busca_pt, log_area))
+    dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
+    dados.extend(search_scholar_google(termo_busca_pt, log_area))
+    dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
+    dados.extend(search_statista(termo_busca_eng, log_area))
+    dados.extend(search_gartner(termo_busca_eng, log_area))
+    dados.extend(search_nielsen(termo_busca_pt, log_area))
+    dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
 
     atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em CSV", log_area)
 
@@ -403,7 +403,7 @@ def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
 
     # Adicionando data e hora ao nome do arquivo
-    timestamp = datetime.now().strftime("%d%m%Y_%H%M")
+    timestamp = (datetime.now() - timedelta(hours=3)).strftime("%d-%m-%Y_%H-%M")
     filename = f'Resultados_{timestamp}.xlsx'
 
     # Salvando o Excel em memória em vez de salvar no disco

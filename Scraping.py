@@ -388,30 +388,31 @@ def search_harvard_business_review(termo_busca_eng, log_area):
 def combine_scripts(termo_busca_pt, termo_busca_eng, log_area):
     dados = []
     dados.extend(search_dados_gov(termo_busca_pt, log_area))
-    dados.extend(search_ipea(termo_busca_pt, log_area))
-    dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
-    dados.extend(search_scholar_google(termo_busca_pt, log_area))
-    dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
-    dados.extend(search_statista(termo_busca_eng, log_area))
-    dados.extend(search_gartner(termo_busca_eng, log_area))
-    dados.extend(search_nielsen(termo_busca_pt, log_area))
-    dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
+    #dados.extend(search_ipea(termo_busca_pt, log_area))
+    #dados.extend(search_biblioteca_digital_fgv(termo_busca_pt, log_area))
+    #dados.extend(search_scholar_google(termo_busca_pt, log_area))
+    #dados.extend(search_sidra_ibge(termo_busca_pt, log_area))
+    #dados.extend(search_statista(termo_busca_eng, log_area))
+    #dados.extend(search_gartner(termo_busca_eng, log_area))
+    #dados.extend(search_nielsen(termo_busca_pt, log_area))
+    #dados.extend(search_harvard_business_review(termo_busca_eng, log_area))
 
     atualizar_log("Coleta de dados concluída. Gerando DataFrame e salvando em CSV", log_area)
 
-    # Gerando o DataFrame
+   # Gerando o DataFrame
     df = pd.DataFrame(dados, columns=['Website', 'Title', 'Link'])
 
     # Adicionando data e hora ao nome do arquivo
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'search_results_{timestamp}.csv'
+    timestamp = datetime.now().strftime("%d%m%Y_%H%M")
+    filename = f'Resultados_{timestamp}.xlsx'
 
-    # Salvando o CSV em memória em vez de salvar no disco
+    # Salvando o Excel em memória em vez de salvar no disco
     output = BytesIO()
-    df.to_csv(output, index=False)
-    processed_data = output.getvalue()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+    processed_data = output.getvalue()  # Obtém o conteúdo do Excel gerado
 
-    atualizar_log(f"Arquivo CSV '{filename}' gerado com sucesso", log_area)
+    atualizar_log(f"Arquivo Excel '{filename}' gerado com sucesso", log_area)
     
     return processed_data, filename
 
@@ -430,12 +431,12 @@ if st.button("Iniciar busca"):
         atualizar_log("Iniciando coleta de dados de todas as fontes", log_area)  # Primeira mensagem
         excel_data, filename = combine_scripts(termo_busca_pt, termo_busca_eng, log_area)  # Passe log_area
         
-        # Adicionar botão para download do CSV
+        # Adicionar botão para download do Excel
         st.download_button(
-            label="Baixar resultados em CSV",
-            data=excel_data,  # Aqui vai o CSV gerado
+            label="Baixar resultados em Excel",
+            data=excel_data,
             file_name=filename,
-            mime='text/csv'  # Mime type para CSV
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     else:
         st.warning("Por favor, preencha ambos os termos de busca.")
